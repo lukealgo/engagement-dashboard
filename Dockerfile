@@ -10,8 +10,8 @@ WORKDIR /app
 COPY package*.json ./
 COPY client/package*.json ./client/
 
-# Install dependencies
-RUN npm ci --omit=dev
+# Install dependencies (include dev dependencies for building)
+RUN npm ci
 RUN cd client && npm ci
 
 # Build the application
@@ -32,6 +32,12 @@ RUN cd client && npm run build
 # Build the server
 RUN npm run build
 
+# Production dependencies stage
+FROM base AS prod-deps
+WORKDIR /app
+COPY package*.json ./
+RUN npm ci --omit=dev
+
 # Production image
 FROM base AS runner
 WORKDIR /app
@@ -46,7 +52,7 @@ RUN adduser --system --uid 1001 dashboard
 # Copy built application
 COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/client/dist ./client/dist
-COPY --from=builder /app/node_modules ./node_modules
+COPY --from=prod-deps /app/node_modules ./node_modules
 COPY --from=builder /app/package.json ./
 
 # Create database directory
