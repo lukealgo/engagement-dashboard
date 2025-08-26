@@ -140,11 +140,11 @@ export const engagementApi = {
   },
 
   syncChannel: async (channelId: string): Promise<void> => {
-    await api.post('/engagement/sync', { channelId });
+    await api.post('/engagement/sync', { channelId }, { timeout: 60000 });
   },
 
   syncAllChannels: async (): Promise<void> => {
-    await api.post('/engagement/sync/all');
+    await api.post('/engagement/sync/all', {}, { timeout: 300000 }); // 5 minutes
   },
 
   getWorkspaceOverview: async (days: number = 30): Promise<WorkspaceOverview> => {
