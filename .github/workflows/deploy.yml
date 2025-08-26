@@ -4,9 +4,7 @@ on:
   push:
     branches:
       - main
-    paths:
-      - 'tools/engagement-dashboard/**'
-      - '.github/workflows/deploy.yml'
+      - master
 
 jobs:
   deploy:
@@ -37,7 +35,7 @@ jobs:
               cd ..
             else
               cd tools/engagement-dashboard
-              git pull origin main || (cd .. && rm -rf engagement-dashboard && git clone https://github.com/lukealgo/engagement-dashboard.git engagement-dashboard)
+              git pull origin master || git pull origin main || (cd .. && rm -rf engagement-dashboard && git clone https://github.com/lukealgo/engagement-dashboard.git engagement-dashboard)
               cd ../..
             fi
             
