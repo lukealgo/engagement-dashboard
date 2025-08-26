@@ -217,16 +217,18 @@ export class EngagementService {
       ),
       first_seen AS (
         SELECT 
-          u.id AS user_id, 
-          DATE(u.updated_at) AS first_date
-        FROM users u
+          ua.user_id, 
+          MIN(ua.date) AS first_activity_date
+        FROM user_activity ua
+        JOIN users u ON ua.user_id = u.id
         WHERE (u.is_bot = 0 OR u.is_bot IS NULL) AND (u.deleted = 0 OR u.deleted IS NULL)
+        GROUP BY ua.user_id
       ),
       new_users_per_day AS (
-        SELECT fs.first_date AS date, COUNT(*) AS new_users
+        SELECT fs.first_activity_date AS date, COUNT(*) AS new_users
         FROM first_seen fs
-        WHERE fs.first_date >= ?
-        GROUP BY fs.first_date
+        WHERE fs.first_activity_date >= ?
+        GROUP BY fs.first_activity_date
       )
       SELECT 
         ds.date,
@@ -237,6 +239,7 @@ export class EngagementService {
       FROM date_series ds
       LEFT JOIN active_per_day apd ON apd.date = ds.date
       LEFT JOIN new_users_per_day nupd ON nupd.date = ds.date
+      WHERE COALESCE(apd.active_users, 0) > 0 OR ds.date = date('now', 'localtime')
       ORDER BY ds.date ASC
     `;
 
@@ -582,9 +585,6 @@ export class EngagementService {
   }
 
   private async calculateDailyMetrics(channelId: string, date: string): Promise<void> {
-    const nextDate = new Date(date);
-    nextDate.setDate(nextDate.getDate() + 1);
-    const nextDateStr = nextDate.toISOString().split('T')[0];
 
     // Get daily stats
     const statsQuery = `
