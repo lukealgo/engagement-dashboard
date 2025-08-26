@@ -1,0 +1,37 @@
+# Troubleshoot HTTPS/SSL Issues
+
+# 1. Check if the engagement-dashboard container is running
+docker compose ps engagement-dashboard
+
+# 2. Check engagement-dashboard logs
+docker compose logs engagement-dashboard
+
+# 3. Check if the service is responding internally
+docker compose exec engagement-dashboard curl -I http://localhost:3001/health
+
+# 4. Check Caddy logs for SSL issues
+docker compose logs caddy
+
+# 5. Check if Caddy can reach the engagement-dashboard service
+docker compose exec caddy wget -q --spider http://engagement-dashboard:3001/health && echo "Service reachable" || echo "Service not reachable"
+
+# 6. Reload Caddy configuration to pick up new domain
+docker compose exec caddy caddy reload --config /etc/caddy/Caddyfile
+
+# 7. Test from outside the container (check if port 3001 is accessible internally)
+curl -I http://localhost:3001/health
+
+# 8. Check DNS resolution for your domain
+nslookup engagement.algomarketing.com
+
+# 9. Test HTTP first (should redirect to HTTPS)
+curl -I http://engagement.algomarketing.com
+
+# 10. If everything else works, test HTTPS
+curl -I https://engagement.algomarketing.com
+
+# 11. Check Docker network connectivity
+docker compose exec caddy nslookup engagement-dashboard
+
+# 12. Verify Caddyfile syntax
+docker compose exec caddy caddy validate --config /etc/caddy/Caddyfile

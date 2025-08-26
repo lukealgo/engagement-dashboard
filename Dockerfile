@@ -55,11 +55,14 @@ COPY --from=builder /app/client/dist ./client/dist
 COPY --from=prod-deps /app/node_modules ./node_modules
 COPY --from=builder /app/package.json ./
 
-# Create database directory
+# Create database directory with proper permissions
 RUN mkdir -p /app/data && chown -R dashboard:nodejs /app/data
 
 # Switch to non-root user
 USER dashboard
+
+# Ensure data directory is writable
+RUN touch /app/data/.keep
 
 # Set environment variables
 ENV NODE_ENV=production

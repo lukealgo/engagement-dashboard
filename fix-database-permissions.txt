@@ -1,0 +1,36 @@
+# Fix Database Permissions Issue
+
+# 1. Stop the failing container
+docker compose stop engagement-dashboard
+
+# 2. Remove the container
+docker compose rm -f engagement-dashboard
+
+# 3. Check if the volume exists and its permissions
+docker volume ls | grep engagement
+docker volume inspect n8n_engagement_data
+
+# 4. Remove the problematic volume (this will delete any existing data)
+docker volume rm n8n_engagement_data
+
+# 5. Recreate the volume with proper permissions
+docker volume create n8n_engagement_data
+
+# 6. Start the service again
+docker compose up -d engagement-dashboard
+
+# 7. Check if it's working now
+docker compose logs engagement-dashboard
+
+# 8. If still failing, check the container user permissions
+docker compose exec engagement-dashboard ls -la /app/data
+
+# Alternative fix - if the above doesn't work:
+# 9. Stop the container
+# docker compose stop engagement-dashboard
+
+# 10. Start with root user temporarily to create the database
+# docker compose run --rm --user root engagement-dashboard sh -c "mkdir -p /app/data && touch /app/data/engagement.db && chown -R 1001:1001 /app/data"
+
+# 11. Start normally
+# docker compose up -d engagement-dashboard
