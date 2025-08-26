@@ -1,0 +1,11 @@
+/* Import Design System */
+@import './styles/globals.css';
+@import './styles/components.css';
+
+/* App-specific overrides */
+#root {
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+  background-color: var(--bg-primary);
+}
