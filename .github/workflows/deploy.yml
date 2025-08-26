@@ -40,18 +40,18 @@ jobs:
             fi
             
             # Stop and remove old container
-            docker-compose stop engagement-dashboard || true
-            docker-compose rm -f engagement-dashboard || true
+            docker compose stop engagement-dashboard || true
+            docker compose rm -f engagement-dashboard || true
             
             # Remove old image
             docker rmi $(docker images | grep engagement-dashboard | awk '{print $3}') || true
             
             # Build and start new container
-            docker-compose up -d engagement-dashboard
+            docker compose up -d engagement-dashboard
             
             # Clean up unused images
             docker image prune -f
             
             # Check if service is running
             sleep 10
-            docker-compose ps engagement-dashboard
+            docker compose ps engagement-dashboard
