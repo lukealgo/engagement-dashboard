@@ -5,7 +5,6 @@ import UserRankings from './UserRankings';
 import ChannelBreakdown from './ChannelBreakdown';
 import TopPosts from './TopPosts';
 import UserActivation from './UserActivation';
-import type { WorkspaceOverview } from '../services/api';
 
 // Memoized components to prevent unnecessary re-renders
 export const MemoizedWorkspaceMetrics = React.memo(WorkspaceMetrics);

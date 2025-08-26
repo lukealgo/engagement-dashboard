@@ -1,0 +1,58 @@
+# Simple Fix - Manually Edit Docker Compose File
+
+# 1. Open the docker-compose.yml file for editing
+nano ~/n8n/docker-compose.yml
+
+# 2. Look for this section at the bottom and DELETE everything from "engagement-dashboard:" down to "retries: 3":
+#   volumes:
+#     n8n_data:
+#     postgres_data:
+#     caddy_data:
+#     caddy_config:
+#     engagement-dashboard:    <- DELETE FROM HERE
+#       build: ./tools/engagement-dashboard
+#       restart: unless-stopped
+#       environment:
+#         - NODE_ENV=production
+#         - SLACK_BOT_TOKEN=${SLACK_BOT_TOKEN}
+#         - SLACK_SIGNING_SECRET=${SLACK_SIGNING_SECRET}
+#         - DATABASE_PATH=/app/data/engagement.db
+#       volumes:
+#         - engagement_data:/app/data
+#       healthcheck:
+#         test: ["CMD", "node", "-e", "require('http').get('http://localhost:3001/health', (res) => { process.exit(res.statusCode === 200 ? 0 : 1) }).on('error', () => process.exit(1))"]
+#         interval: 30s
+#         timeout: 10s
+#         retries: 3            <- DELETE TO HERE
+
+# 3. Make sure your volumes section looks like this:
+# volumes:
+#   n8n_data:
+#   postgres_data:
+#   caddy_data:
+#   caddy_config:
+#   engagement_data:
+
+# 4. Then ADD this service BEFORE the "volumes:" section (in the services section):
+
+  # Engagement Dashboard
+  engagement-dashboard:
+    build: ./tools/engagement-dashboard
+    restart: unless-stopped
+    environment:
+      - NODE_ENV=production
+      - SLACK_BOT_TOKEN=${SLACK_BOT_TOKEN}
+      - SLACK_SIGNING_SECRET=${SLACK_SIGNING_SECRET}
+      - DATABASE_PATH=/app/data/engagement.db
+    volumes:
+      - engagement_data:/app/data
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:3001/health', (res) => { process.exit(res.statusCode === 200 ? 0 : 1) }).on('error', () => process.exit(1))"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+# 5. Save and exit nano (Ctrl+X, then Y, then Enter)
+
+# 6. Try starting the service
+docker compose up -d engagement-dashboard

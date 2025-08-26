@@ -1,0 +1,55 @@
+# Final Fix Commands - Copy these one by one
+
+# 1. Exit nano if you're still in it (Ctrl+X)
+
+# 2. Remove the incorrectly placed engagement-dashboard section from volumes
+sed -i '/volumes:/,/engagement-dashboard:/s/engagement-dashboard:.*$//' ~/n8n/docker-compose.yml
+sed -i '/engagement_data:/,/retries: 3/d' ~/n8n/docker-compose.yml
+
+# 3. Clean up the volumes section properly
+cat > /tmp/volumes_fix.txt << 'EOF'
+volumes:
+  n8n_data:
+  postgres_data:
+  caddy_data:
+  caddy_config:
+  engagement_data:
+EOF
+
+# 4. Replace the volumes section
+sed -i '/^volumes:/,$d' ~/n8n/docker-compose.yml
+cat /tmp/volumes_fix.txt >> ~/n8n/docker-compose.yml
+
+# 5. Now add the engagement-dashboard service in the correct place (BEFORE volumes)
+sed -i '/^volumes:/i\
+\
+  # Engagement Dashboard\
+  engagement-dashboard:\
+    build: ./tools/engagement-dashboard\
+    restart: unless-stopped\
+    environment:\
+      - NODE_ENV=production\
+      - SLACK_BOT_TOKEN=${SLACK_BOT_TOKEN}\
+      - SLACK_SIGNING_SECRET=${SLACK_SIGNING_SECRET}\
+      - DATABASE_PATH=/app/data/engagement.db\
+    volumes:\
+      - engagement_data:/app/data\
+    healthcheck:\
+      test: ["CMD", "node", "-e", "require('\''http'\'').get('\''http://localhost:3001/health'\'', (res) => { process.exit(res.statusCode === 200 ? 0 : 1) }).on('\''error'\'', () => process.exit(1))"]\
+      interval: 30s\
+      timeout: 10s\
+      retries: 3\
+' ~/n8n/docker-compose.yml
+
+# 6. Verify the structure looks correct
+echo "=== Checking structure ==="
+grep -E "^[a-z]|^  [a-z]" ~/n8n/docker-compose.yml | tail -15
+
+# 7. Start the service
+docker compose up -d engagement-dashboard
+
+# 8. Check if it's running
+docker compose ps engagement-dashboard
+
+# 9. If there are issues, check logs
+docker compose logs engagement-dashboard

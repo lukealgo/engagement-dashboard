@@ -1,0 +1,79 @@
+# Server Setup Commands for Engagement Dashboard
+# Copy and paste these commands one by one into your server terminal
+
+# 1. First, check what's currently in your docker-compose.yml
+tail -20 ~/n8n/docker-compose.yml
+
+# 2. Check for any existing engagement entries
+grep -n "engagement" ~/n8n/docker-compose.yml
+
+# 3. Remove any incorrect engagement-dashboard entries (if they exist)
+sed -i '/engagement_data:/,/retries: 3/d' ~/n8n/docker-compose.yml
+
+# 4. Add the engagement-dashboard service to docker-compose.yml
+cat >> ~/n8n/docker-compose.yml << 'EOF'
+
+  # Engagement Dashboard
+  engagement-dashboard:
+    build: ./tools/engagement-dashboard
+    restart: unless-stopped
+    environment:
+      - NODE_ENV=production
+      - SLACK_BOT_TOKEN=${SLACK_BOT_TOKEN}
+      - SLACK_SIGNING_SECRET=${SLACK_SIGNING_SECRET}
+      - DATABASE_PATH=/app/data/engagement.db
+    volumes:
+      - engagement_data:/app/data
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:3001/health', (res) => { process.exit(res.statusCode === 200 ? 0 : 1) }).on('error', () => process.exit(1))"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+EOF
+
+# 5. Add the volume to the volumes section
+sed -i '/^volumes:/a\  engagement_data:' ~/n8n/docker-compose.yml
+
+# 6. Add Slack environment variables to .env file
+echo "" >> ~/n8n/.env
+echo "# Engagement Dashboard" >> ~/n8n/.env
+echo "SLACK_BOT_TOKEN=your-bot-token-here" >> ~/n8n/.env
+echo "SLACK_SIGNING_SECRET=your-signing-secret-here" >> ~/n8n/.env
+
+# 7. Update Caddyfile to add engagement subdomain
+cat >> ~/n8n/Caddyfile << 'EOF'
+
+engagement.algomarketing.com {
+    reverse_proxy engagement-dashboard:3001
+    header {
+        Strict-Transport-Security "max-age=31536000"
+    }
+}
+EOF
+
+# 8. Create tools directory structure
+mkdir -p ~/n8n/tools/engagement-dashboard
+
+# 9. Clone the engagement dashboard repository
+cd ~/n8n/tools
+git clone https://github.com/lukealgo/engagement-dashboard.git engagement-dashboard
+cd ~/n8n
+
+# 10. IMPORTANT: Edit .env file with your actual Slack credentials
+# Replace "your-bot-token-here" and "your-signing-secret-here" with real values
+nano ~/.env
+
+# 11. Start the engagement-dashboard service
+docker-compose up -d engagement-dashboard
+
+# 12. Check if the service is running
+docker-compose ps engagement-dashboard
+
+# 13. Check logs if there are issues
+docker-compose logs engagement-dashboard
+
+# 14. Reload Caddy to pick up new domain
+docker-compose exec caddy caddy reload --config /etc/caddy/Caddyfile
+
+# 15. Test the deployment
+curl -I https://engagement.algomarketing.com/health

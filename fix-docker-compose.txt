@@ -1,0 +1,46 @@
+# Fix Docker Compose File
+# The engagement-dashboard service was added to the wrong section
+
+# 1. First, let's see the current structure
+cat ~/n8n/docker-compose.yml | grep -A 20 "volumes:"
+
+# 2. Remove the incorrectly placed engagement-dashboard from volumes section
+sed -i '/volumes:/,/^[[:space:]]*engagement-dashboard:/d' ~/n8n/docker-compose.yml
+sed -i '/engagement-dashboard:/,/retries: 3/d' ~/n8n/docker-compose.yml
+
+# 3. Re-add volumes section properly
+echo "" >> ~/n8n/docker-compose.yml
+echo "volumes:" >> ~/n8n/docker-compose.yml
+echo "  n8n_data:" >> ~/n8n/docker-compose.yml
+echo "  postgres_data:" >> ~/n8n/docker-compose.yml
+echo "  caddy_data:" >> ~/n8n/docker-compose.yml
+echo "  caddy_config:" >> ~/n8n/docker-compose.yml
+echo "  engagement_data:" >> ~/n8n/docker-compose.yml
+
+# 4. Now add the engagement-dashboard service in the SERVICES section (before volumes)
+# First, find where services end (usually before volumes)
+sed -i '/^volumes:/i\
+\
+  # Engagement Dashboard\
+  engagement-dashboard:\
+    build: ./tools/engagement-dashboard\
+    restart: unless-stopped\
+    environment:\
+      - NODE_ENV=production\
+      - SLACK_BOT_TOKEN=${SLACK_BOT_TOKEN}\
+      - SLACK_SIGNING_SECRET=${SLACK_SIGNING_SECRET}\
+      - DATABASE_PATH=/app/data/engagement.db\
+    volumes:\
+      - engagement_data:/app/data\
+    healthcheck:\
+      test: ["CMD", "node", "-e", "require('\''http'\'').get('\''http://localhost:3001/health'\'', (res) => { process.exit(res.statusCode === 200 ? 0 : 1) }).on('\''error'\'', () => process.exit(1))"]\
+      interval: 30s\
+      timeout: 10s\
+      retries: 3' ~/n8n/docker-compose.yml
+
+# 5. Verify the structure looks correct
+echo "=== Checking docker-compose.yml structure ==="
+cat ~/n8n/docker-compose.yml | grep -E "^[a-z]|^  [a-z]" | tail -20
+
+# 6. Try starting the service
+docker compose up -d engagement-dashboard
