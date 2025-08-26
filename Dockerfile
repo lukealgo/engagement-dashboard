@@ -45,24 +45,17 @@ WORKDIR /app
 # Install sqlite3 for production
 RUN apk add --no-cache sqlite
 
-# Create a non-root user
-RUN addgroup --system --gid 1001 nodejs
-RUN adduser --system --uid 1001 dashboard
-
 # Copy built application
 COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/client/dist ./client/dist
 COPY --from=prod-deps /app/node_modules ./node_modules
 COPY --from=builder /app/package.json ./
 
-# Create database directory with proper permissions
-RUN mkdir -p /app/data && chown -R dashboard:nodejs /app/data
+# Create database directory
+RUN mkdir -p /app/data
 
-# Switch to non-root user
-USER dashboard
-
-# Ensure data directory is writable
-RUN touch /app/data/.keep
+# Run as root for now to avoid permission issues
+# USER dashboard
 
 # Set environment variables
 ENV NODE_ENV=production

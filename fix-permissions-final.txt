@@ -1,0 +1,23 @@
+# Final Fix for Database Permissions
+
+# 1. Stop everything
+docker compose stop engagement-dashboard
+docker compose rm -f engagement-dashboard
+
+# 2. Remove the volume completely
+docker volume rm n8n_engagement_data
+
+# 3. Remove the old image to force rebuild
+docker rmi $(docker images | grep engagement-dashboard | awk '{print $3}') || echo "No image to remove"
+
+# 4. Rebuild and start (this will use the simplified Dockerfile)
+docker compose up -d engagement-dashboard --build
+
+# 5. Check logs
+docker compose logs engagement-dashboard
+
+# 6. If it works, test the health endpoint
+curl -I http://localhost:3001/health
+
+# 7. Check if the database file was created
+docker compose exec engagement-dashboard ls -la /app/data/
