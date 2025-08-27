@@ -39,15 +39,11 @@ jobs:
               cd ../..
             fi
             
-            # Stop and remove old container
+            # Stop container but keep data
             docker compose stop engagement-dashboard || true
-            docker compose rm -f engagement-dashboard || true
             
-            # Remove old image
-            docker rmi $(docker images | grep engagement-dashboard | awk '{print $3}') || true
-            
-            # Build and start new container
-            docker compose up -d engagement-dashboard
+            # Build and start new container (this will recreate container but preserve volume)
+            docker compose up -d engagement-dashboard --force-recreate
             
             # Clean up unused images
             docker image prune -f

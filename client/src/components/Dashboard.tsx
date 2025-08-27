@@ -122,7 +122,7 @@ const Dashboard: React.FC = () => {
               <Logo
                 src="/algomarketing-logo.svg"
                 alt="Community Engagement logo"
-                size="medium"
+                size="large"
                 showFallback={true}
               />
               <h1 className="brand-name">Community Engagement</h1>
