@@ -122,7 +122,7 @@ const Dashboard: React.FC = () => {
               <Logo
                 src="/algomarketing-logo.svg"
                 alt="Community Engagement logo"
-                size="large"
+                size="xlarge"
                 showFallback={true}
               />
               <h1 className="brand-name">Community Engagement</h1>
@@ -132,8 +132,8 @@ const Dashboard: React.FC = () => {
           <div className="header-right">
             <nav className="header-nav" role="navigation" aria-label="Dashboard controls">
               <div className="time-range-selector">
-                <label htmlFor="time-range" className="visually-hidden">
-                  Select time range for data display
+                <label htmlFor="time-range" className="time-range-label">
+                  Time Range:
                 </label>
                 <select
                   id="time-range"
@@ -145,6 +145,8 @@ const Dashboard: React.FC = () => {
                   <option value={7}>Last 7 days</option>
                   <option value={30}>Last 30 days</option>
                   <option value={90}>Last 90 days</option>
+                  <option value={180}>Last 6 months</option>
+                  <option value={365}>Last 12 months</option>
                 </select>
                 <span id="time-range-description" className="visually-hidden">
                   Changes the time range for all dashboard data

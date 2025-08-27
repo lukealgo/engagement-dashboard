@@ -4,7 +4,7 @@ import './Logo.css';
 interface LogoProps {
   src?: string;
   alt?: string;
-  size?: 'small' | 'medium' | 'large';
+  size?: 'small' | 'medium' | 'large' | 'xlarge';
   className?: string;
   showFallback?: boolean;
 }
