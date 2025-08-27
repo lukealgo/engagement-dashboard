@@ -11,17 +11,17 @@
 
 /* Modern Header Styles - Glassmorphic */
 .modern-header {
-  background: rgba(74, 144, 226, 0.15);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
+  background: linear-gradient(90deg, #7f77ea 0%, #2fdcc0 100%);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
   border: 1px solid rgba(255, 255, 255, 0.2);
   margin: 0 auto var(--space-8) auto;
   max-width: var(--container-max-width);
-  box-shadow: 
-    0 8px 32px rgba(0, 0, 0, 0.1),
-    0 2px 8px rgba(0, 0, 0, 0.05),
-    inset 0 1px 0 rgba(255, 255, 255, 0.3);
-  border-radius: var(--radius-2xl);
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.08),
+    0 2px 8px rgba(0, 0, 0, 0.04),
+    inset 0 1px 0 rgba(255, 255, 255, 0.25);
+  border-radius: 9999px;
   position: relative;
   overflow: hidden;
 }
@@ -48,7 +48,7 @@
   padding: var(--space-2) var(--space-6);
   position: relative;
   z-index: 1;
-  min-height: 60px;
+  min-height: 56px;
 }
 
 .header-left {
@@ -60,6 +60,13 @@
   display: flex;
   align-items: center;
   gap: var(--space-3);
+}
+
+/* Header logo sizing (compact like original site) */
+.header-logo.logo--large {
+  width: 150px;
+  height: 42px;
+  border-radius: 6px;
 }
 
 .logo-placeholder {
@@ -75,11 +82,11 @@
 }
 
 .brand-name {
-  font-size: var(--font-size-2xl);
-  font-weight: var(--font-weight-bold);
-  color: white;
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  letter-spacing: -0.02em;
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-semibold);
+  color: #ffffff;
+  text-shadow: 0 2px 3px rgba(0, 0, 0, 0.08);
+  letter-spacing: -0.01em;
   margin: 0;
 }
 
@@ -235,6 +242,9 @@
   transform: none;
   box-shadow: none;
 }
+
+/* CTA and hamburger to match algomarketing.com header */
+/* removed CTA and hamburger */
 
 .loading {
   text-align: center;

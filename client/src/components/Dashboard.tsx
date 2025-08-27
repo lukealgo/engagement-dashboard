@@ -122,13 +122,13 @@ const Dashboard: React.FC = () => {
               <Logo
                 src="/algomarketing-logo.svg"
                 alt="Community Engagement logo"
-                size="xlarge"
+                size="large"
+                className="header-logo"
                 showFallback={true}
               />
-              <h1 className="brand-name">Community Engagement</h1>
             </div>
           </div>
-          
+
           <div className="header-right">
             <nav className="header-nav" role="navigation" aria-label="Dashboard controls">
               <div className="time-range-selector">
