@@ -120,12 +120,12 @@ const Dashboard: React.FC = () => {
           <div className="header-left">
             <div className="logo-section">
               <Logo
-                src={import.meta.env.VITE_LOGO_URL}
-                alt="algo.marketing logo"
+                src="/algomarketing-logo.svg"
+                alt="Community Engagement logo"
                 size="medium"
                 showFallback={true}
               />
-              <h1 className="brand-name">algo.marketing</h1>
+              <h1 className="brand-name">Community Engagement</h1>
             </div>
           </div>
           

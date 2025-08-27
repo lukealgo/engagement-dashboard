@@ -11,7 +11,7 @@ interface LogoProps {
 
 const Logo: React.FC<LogoProps> = ({ 
   src, 
-  alt = 'algo.marketing logo', 
+  alt = 'Community Engagement logo', 
   size = 'medium',
   className = '',
   showFallback = true 
