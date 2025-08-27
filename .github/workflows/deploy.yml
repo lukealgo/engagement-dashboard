@@ -42,12 +42,18 @@ jobs:
             # Stop container but keep data
             docker compose stop engagement-dashboard || true
             
-            # Build and start new container (this will recreate container but preserve volume)
+            # Force rebuild the image (no cache) and start new container
+            docker compose build --no-cache engagement-dashboard
             docker compose up -d engagement-dashboard --force-recreate
             
             # Clean up unused images
             docker image prune -f
             
             # Check if service is running
-            sleep 10
+            sleep 15
             docker compose ps engagement-dashboard
+            
+            # Verify the client files were built correctly
+            echo "Checking client files in container:"
+            docker compose exec engagement-dashboard ls -la /app/client/dist/
+            docker compose exec engagement-dashboard head -5 /app/client/dist/index.html
