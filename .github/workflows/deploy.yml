@@ -39,12 +39,13 @@ jobs:
               cd ../..
             fi
             
-            # Stop container but keep data
+            # Stop and remove container but preserve volume
             docker compose stop engagement-dashboard || true
+            docker compose rm -f engagement-dashboard || true
             
             # Force rebuild the image (no cache) and start new container
             docker compose build --no-cache engagement-dashboard
-            docker compose up -d engagement-dashboard --force-recreate
+            docker compose up -d engagement-dashboard
             
             # Clean up unused images
             docker image prune -f
@@ -57,3 +58,9 @@ jobs:
             echo "Checking client files in container:"
             docker compose exec engagement-dashboard ls -la /app/client/dist/
             docker compose exec engagement-dashboard head -5 /app/client/dist/index.html
+            
+            # Verify database volume persistence
+            echo "Checking database persistence:"
+            docker compose exec engagement-dashboard ls -la /app/data/
+            echo "Database file size (should persist between deployments):"
+            docker compose exec engagement-dashboard stat /app/data/engagement.db 2>/dev/null || echo "Database file not found - will be created on first sync"
