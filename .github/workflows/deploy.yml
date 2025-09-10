@@ -83,7 +83,7 @@ jobs:
 
             # Force rebuild the image (no cache) and start new container
             docker compose build --no-cache --pull engagement-dashboard
-            docker compose up -d engagement-dashboard
+            docker compose up -d --force-recreate engagement-dashboard
             
             # Check if service is running and capture logs
             sleep 15

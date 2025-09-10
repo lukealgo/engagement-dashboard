@@ -2,7 +2,9 @@ import dotenv from 'dotenv';
 import path from 'path';
 
 // Load environment variables from .env file
-dotenv.config({ path: path.resolve(__dirname, '../../.env') });
+// Try local .env; if not present, fall back to process.env (e.g., Docker env)
+const envPath = path.resolve(__dirname, '../../.env');
+dotenv.config({ path: envPath });
 
 export interface Config {
   port: number;
