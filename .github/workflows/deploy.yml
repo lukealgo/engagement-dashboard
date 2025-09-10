@@ -47,6 +47,9 @@ jobs:
             cat > tools/engagement-dashboard/.env << EOF
             SLACK_BOT_TOKEN=${SLACK_BOT_TOKEN}
             SLACK_APP_TOKEN=${SLACK_APP_TOKEN}
+            # Provide safe fallbacks so legacy builds don't crash
+            HIBOBSECRET=${HIBOBSECRET:-dummy}
+            HIBOBSERVICE=${HIBOBSERVICE:-dummy}
             DATABASE_URL=${DATABASE_URL:-/app/data/engagement.db}
             NODE_ENV=production
             PORT=3001
