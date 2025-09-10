@@ -12,9 +12,7 @@ import {
   AreaChart,
 } from 'recharts';
 import { hibobApi } from '../services/api';
-import type { HiBobEmployee } from '../services/api';
-
-export type HiBobTenureData = { tenure: HiBobEmployee[] };
+import type { HiBobEmployee, HiBobTenureData } from '../services/api';
 
 interface ActivityData {
   date: string;
@@ -53,7 +51,7 @@ const HiBobActivityChart: React.FC<ActivityChartProps> = ({
       // Fetch data from different HiBob endpoints with error handling
       let employees: HiBobEmployee[] = [];
       let lifecycle = [];
-      let workHistory: HiBobTenureData = { tenure: [] };
+      let workHistory: HiBobTenureData;
 
       try {
         const employeesResult = await hibobApi.getEmployees();
@@ -73,11 +71,11 @@ const HiBobActivityChart: React.FC<ActivityChartProps> = ({
 
       try {
         const workHistoryResult = await hibobApi.getTenureData();
-        workHistory = workHistoryResult && workHistoryResult.tenure ?
-          workHistoryResult : { tenure: [] };
+        workHistory = workHistoryResult || { tenure: [], upcomingAnniversaries: [] };
         console.log(`HiBobActivityChart: Fetched ${workHistory.tenure.length} work history records`);
       } catch (err) {
         console.warn('HiBobActivityChart: Failed to fetch work history:', err);
+        workHistory = { tenure: [], upcomingAnniversaries: [] };
       }
 
       // Process and aggregate data by date
