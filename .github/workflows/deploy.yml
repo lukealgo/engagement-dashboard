@@ -71,12 +71,12 @@ jobs:
                 echo "WARNING: No docker-compose.yml found in $(pwd). Skipping display."
             fi
 
-            # Aggressive cleanup of old containers and images
+            # Aggressive cleanup of old containers and images (defensive wrappers for empty lists)
             docker compose down --volumes --remove-orphans || true
-            docker stop $(docker ps -aq) || true
-            docker rm $(docker ps -aq) || true
-            docker rmi $(docker images -q engagement-dashboard) || true
-            docker system prune -f
+            if [ -n "$(docker ps -aq)" ]; then docker stop $(docker ps -aq) || true; fi
+            if [ -n "$(docker ps -aq)" ]; then docker rm $(docker ps -aq) || true; fi
+            if [ -n "$(docker images -q engagement-dashboard)" ]; then docker rmi $(docker images -q engagement-dashboard) || true; fi
+            docker system prune -f || true
 
             # Force rebuild the image (no cache) and start new container
             docker compose build --no-cache --pull engagement-dashboard

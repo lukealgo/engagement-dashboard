@@ -22,26 +22,24 @@ export interface Config {
 }
 
 export function validateEnvironment(): Config {
-  const requiredEnvVars = ['SLACK_BOT_TOKEN'];
-  const missingVars = requiredEnvVars.filter(varName => !process.env[varName]);
+  // Do not hard-require any env vars so the app can boot without credentials
 
-  if (missingVars.length > 0) {
-    throw new Error(`Missing required environment variables: ${missingVars.join(', ')}`);
-  }
-
-  // Check for HiBob variables but don't require them
   const hibobApiKey = process.env.HIBOBSECRET;
   const hibobServiceUserId = process.env.HIBOBSERVICE;
+  const slackBotToken = process.env.SLACK_BOT_TOKEN;
 
+  if (!slackBotToken) {
+    console.warn('⚠️  SLACK_BOT_TOKEN not set - Slack features will be disabled');
+  }
   if (!hibobApiKey || !hibobServiceUserId) {
-    console.warn('⚠️  HiBob environment variables not found - HiBob functionality will be disabled');
+    console.warn('⚠️  HiBob credentials not set - HiBob functionality is disabled');
   }
 
   return {
     port: parseInt(process.env.PORT || '3001', 10),
     nodeEnv: process.env.NODE_ENV || 'development',
     slack: {
-      botToken: process.env.SLACK_BOT_TOKEN!,
+      botToken: slackBotToken || '',
       appToken: process.env.SLACK_APP_TOKEN,
     },
     hibob: {
