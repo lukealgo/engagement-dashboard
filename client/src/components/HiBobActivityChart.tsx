@@ -12,6 +12,9 @@ import {
   AreaChart,
 } from 'recharts';
 import { hibobApi } from '../services/api';
+import type { HiBobEmployee } from '../services/api';
+
+export type HiBobTenureData = { tenure: HiBobEmployee[] };
 
 interface ActivityData {
   date: string;
@@ -19,6 +22,7 @@ interface ActivityData {
   lifecycleEvents: number;
   workChanges: number;
   totalActivity: number;
+  formattedDate?: string;
 }
 
 interface ActivityChartProps {
@@ -47,9 +51,9 @@ const HiBobActivityChart: React.FC<ActivityChartProps> = ({
       console.log('HiBobActivityChart: Starting to fetch activity data...');
 
       // Fetch data from different HiBob endpoints with error handling
-      let employees = [];
+      let employees: HiBobEmployee[] = [];
       let lifecycle = [];
-      let workHistory = { tenure: [] };
+      let workHistory: HiBobTenureData = { tenure: [] };
 
       try {
         const employeesResult = await hibobApi.getEmployees();

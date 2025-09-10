@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { webinarApi } from '../services/api';
-import type { Webinar, WebinarStats, WebinarAttendee } from '../services/api';
+import type { Webinar, WebinarStats } from '../services/api';
 import { useToast } from '../hooks/useToast';
 import WebinarCSVUpload from './WebinarCSVUpload';
 import './WebinarDashboardSection.css';
