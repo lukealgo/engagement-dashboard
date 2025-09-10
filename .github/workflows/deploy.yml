@@ -19,13 +19,10 @@ jobs:
         
       - name: Deploy to server
         uses: appleboy/ssh-action@v1.0.3
-        env:
-          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
-          SLACK_APP_TOKEN: ${{ secrets.SLACK_APP_TOKEN }}
-          HIBOBSECRET: ${{ secrets.HIBOB_API_KEY }}
-          HIBOBSERVICE: ${{ secrets.HIBOB_SERVICE_USER_ID }}
-          HIBOB_BASE: ${{ secrets.HIBOB_BASE_URL }}
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          env:
+            SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+            SLACK_APP_TOKEN: ${{ secrets.SLACK_APP_TOKEN }}
+            DATABASE_URL: ${{ secrets.DATABASE_URL }}
         with:
           host: ${{ secrets.SERVER_HOST }}
           username: ${{ secrets.SERVER_USER }}
@@ -50,9 +47,6 @@ jobs:
             cat > tools/engagement-dashboard/.env << EOF
             SLACK_BOT_TOKEN=${SLACK_BOT_TOKEN}
             SLACK_APP_TOKEN=${SLACK_APP_TOKEN}
-            HIBOBSECRET=${HIBOBSECRET}
-            HIBOBSERVICE=${HIBOBSERVICE}
-            HIBOB_BASE=${HIBOB_BASE:-https://api.hibob.com}
             DATABASE_URL=${DATABASE_URL:-/app/data/engagement.db}
             NODE_ENV=production
             PORT=3001
