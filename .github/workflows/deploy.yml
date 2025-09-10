@@ -50,15 +50,31 @@ jobs:
             # Clean up unused images
             docker image prune -f
             
-            # Check if service is running
+            # Check if service is running and capture logs
             sleep 15
             docker compose ps engagement-dashboard
-            
+
+            # Check container logs for any errors
+            echo "Checking container logs for errors:"
+            docker compose logs engagement-dashboard | tail -50
+
+            # Wait a bit more and check status again
+            sleep 10
+            echo "Container status after additional wait:"
+            docker compose ps engagement-dashboard
+
+            # If container is still restarting, show recent logs
+            if docker compose ps engagement-dashboard | grep -q "Restarting"; then
+              echo "❌ Container is still restarting. Showing recent logs:"
+              docker compose logs --tail=100 engagement-dashboard
+              exit 1
+            fi
+
             # Verify the client files were built correctly
             echo "Checking client files in container:"
             docker compose exec engagement-dashboard ls -la /app/client/dist/
             docker compose exec engagement-dashboard head -5 /app/client/dist/index.html
-            
+
             # Verify database volume persistence
             echo "Checking database persistence:"
             docker compose exec engagement-dashboard ls -la /app/data/
