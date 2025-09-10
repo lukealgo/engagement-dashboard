@@ -11,15 +11,20 @@ export interface Config {
     botToken: string;
     appToken?: string;
   };
+  hibob: {
+    apiKey: string;
+    serviceUserId: string;
+    baseUrl: string;
+  };
   database: {
     url: string;
   };
 }
 
 export function validateEnvironment(): Config {
-  const requiredEnvVars = ['SLACK_BOT_TOKEN'];
+  const requiredEnvVars = ['SLACK_BOT_TOKEN', 'HIBOBSECRET', 'HIBOBSERVICE'];
   const missingVars = requiredEnvVars.filter(varName => !process.env[varName]);
-  
+
   if (missingVars.length > 0) {
     throw new Error(`Missing required environment variables: ${missingVars.join(', ')}`);
   }
@@ -30,6 +35,11 @@ export function validateEnvironment(): Config {
     slack: {
       botToken: process.env.SLACK_BOT_TOKEN!,
       appToken: process.env.SLACK_APP_TOKEN,
+    },
+    hibob: {
+      apiKey: process.env.HIBOBSECRET!,
+      serviceUserId: process.env.HIBOBSERVICE!,
+      baseUrl: process.env.HIBOB_BASE || 'https://api.hibob.com',
     },
     database: {
       url: process.env.DATABASE_URL || './engagement.db',

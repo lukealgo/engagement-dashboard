@@ -102,6 +102,154 @@ export interface WorkspaceOverview {
   }>;
 }
 
+// HiBob API Types
+export interface HiBobEmployee {
+  id: string;
+  display_name: string;
+  email?: string;
+  manager_id?: string;
+  department?: string;
+  site?: string;
+  job_title?: string;
+  start_date?: string;
+  status?: string;
+  avatar_url?: string;
+  employment_status?: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface HiBobDashboardMetrics {
+  headcount: {
+    total: number;
+    byDepartment: Record<string, number>;
+    bySite: Record<string, number>;
+    joiners30d: number;
+    joiners90d: number;
+    leavers30d: number;
+    leavers90d: number;
+  };
+  tasks: {
+    totalOpen: number;
+    completionRate30d: number;
+    overdueCount: number;
+    dueSoonCount: number;
+    byDepartment: Record<string, { total: number; completed: number; rate: number }>;
+  };
+  timeOff: {
+    totalRequests30d: number;
+    approvedRequests30d: number;
+    approvalRate30d: number;
+    whosOutToday: number;
+    whosOutThisWeek: number;
+    upcomingThisMonth: number;
+  };
+  engagement: {
+    averageEngagementScore?: number;
+    responseRate?: number;
+    byDepartment?: Record<string, number>;
+  };
+}
+
+export interface HiBobTimeOffEntry {
+  id: number;
+  employee_id: string;
+  date: string;
+  portion: 'full' | 'am' | 'pm';
+  policy_type: string;
+  employee_name?: string;
+  department?: string;
+  site?: string;
+}
+
+export interface HiBobTask {
+  id: string;
+  employee_id: string;
+  title: string;
+  description?: string;
+  list_name: string;
+  status: 'open' | 'completed' | 'cancelled';
+  due_date?: string;
+  created_date?: string;
+  last_updated: string;
+  priority?: 'low' | 'medium' | 'high';
+  assignee?: string;
+  completed_date?: string;
+  employee_name?: string;
+  department?: string;
+}
+
+export interface HiBobTenureData {
+  tenure: Array<{
+    id: string;
+    display_name: string;
+    start_date?: string;
+    department?: string;
+    site?: string;
+    tenure_years: number;
+  }>;
+  upcomingAnniversaries: Array<{
+    id: string;
+    display_name: string;
+    start_date?: string;
+    department?: string;
+    current_tenure_years: number;
+    days_to_next_anniversary: number;
+  }>;
+}
+
+// Webinar API Types
+export interface WebinarAttendee {
+  id: number;
+  webinar_id: number;
+  participant_name: string;
+  attendance_started_at?: string;
+  joined_at?: string;
+  attendance_stopped_at?: string;
+  attended_duration: string;
+  meeting_code?: string;
+  created_at: string;
+}
+
+export interface Webinar {
+  id: number;
+  name: string;
+  host: string;
+  host_id?: number;
+  meeting_code?: string;
+  total_attendees: number;
+  unique_attendees: number;
+  average_duration: string;
+  created_at: string;
+  updated_at: string;
+  attendees: WebinarAttendee[];
+}
+
+export interface WebinarHost {
+  id: number;
+  name: string;
+  webinar_count: number;
+  total_attendees: number;
+  created_at: string;
+}
+
+export interface WebinarStats {
+  total_webinars: number;
+  total_attendees: number;
+  average_attendance_per_webinar: number;
+  most_popular_host: string;
+  top_webinars_by_attendance: Webinar[];
+  recent_webinars: Webinar[];
+}
+
+export interface CSVUploadResponse {
+  success: boolean;
+  webinar_id: number;
+  attendees_imported: number;
+  attendees_filtered: number;
+  message: string;
+}
+
 export const slackApi = {
   getChannels: async (): Promise<Channel[]> => {
     const response = await api.get('/slack/channels');
@@ -166,6 +314,156 @@ export const engagementApi = {
       params: { days }
     });
     return response.data;
+  },
+};
+
+export const hibobApi = {
+  getDashboardMetrics: async (): Promise<HiBobDashboardMetrics> => {
+    const response = await api.get('/hibob/metrics');
+    return response.data;
+  },
+
+  syncAllData: async (): Promise<{ message: string }> => {
+    const response = await api.post('/hibob/sync');
+    return response.data;
+  },
+
+  syncEmployees: async (): Promise<{ message: string }> => {
+    const response = await api.post('/hibob/sync/employees');
+    return response.data;
+  },
+
+  syncTasks: async (): Promise<{ message: string }> => {
+    const response = await api.post('/hibob/sync/tasks');
+    return response.data;
+  },
+
+  syncTimeOff: async (): Promise<{ message: string }> => {
+    const response = await api.post('/hibob/sync/timeoff');
+    return response.data;
+  },
+
+  syncReports: async (): Promise<{ message: string }> => {
+    const response = await api.post('/hibob/sync/reports');
+    return response.data;
+  },
+
+  getEmployees: async (params?: {
+    department?: string;
+    site?: string;
+    status?: string;
+    limit?: number;
+    offset?: number;
+  }): Promise<HiBobEmployee[]> => {
+    const response = await api.get('/hibob/employees', { params });
+    return response.data;
+  },
+
+  getEmployee: async (id: string): Promise<HiBobEmployee> => {
+    const response = await api.get(`/hibob/employees/${id}`);
+    return response.data;
+  },
+
+  getTasks: async (params?: {
+    status?: string;
+    employee_id?: string;
+    department?: string;
+    limit?: number;
+    offset?: number;
+  }): Promise<HiBobTask[]> => {
+    const response = await api.get('/hibob/tasks', { params });
+    return response.data;
+  },
+
+  getTimeOffRequests: async (params?: {
+    status?: string;
+    employee_id?: string;
+    department?: string;
+    days?: number;
+    limit?: number;
+    offset?: number;
+  }): Promise<any[]> => {
+    const response = await api.get('/hibob/timeoff/requests', { params });
+    return response.data;
+  },
+
+  getWhosOut: async (params?: {
+    from?: string;
+    to?: string;
+    department?: string;
+  }): Promise<HiBobTimeOffEntry[]> => {
+    const response = await api.get('/hibob/timeoff/whosout', { params });
+    return response.data;
+  },
+
+  getTimeOffCalendar: async (params?: {
+    from?: string;
+    to?: string;
+  }): Promise<any[]> => {
+    const response = await api.get('/hibob/timeoff/calendar', { params });
+    return response.data;
+  },
+
+  getReports: async (): Promise<any[]> => {
+    const response = await api.get('/hibob/reports');
+    return response.data;
+  },
+
+  getReport: async (name: string): Promise<any> => {
+    const response = await api.get(`/hibob/reports/${name}`);
+    return response.data;
+  },
+
+  getOrgMobility: async (days: number = 90): Promise<any[]> => {
+    const response = await api.get('/hibob/org-mobility', { params: { days } });
+    return response.data;
+  },
+
+  getTenureData: async (): Promise<HiBobTenureData> => {
+    const response = await api.get('/hibob/tenure');
+    return response.data;
+  },
+};
+
+export const webinarApi = {
+  // Get all webinars
+  getWebinars: async (): Promise<Webinar[]> => {
+    const response = await api.get('/webinars');
+    return response.data;
+  },
+
+  // Get webinar by ID
+  getWebinar: async (id: number): Promise<Webinar> => {
+    const response = await api.get(`/webinars/${id}`);
+    return response.data;
+  },
+
+  // Get webinar hosts
+  getWebinarHosts: async (): Promise<WebinarHost[]> => {
+    const response = await api.get('/webinars/hosts');
+    return response.data;
+  },
+
+  // Get webinar statistics
+  getWebinarStats: async (): Promise<WebinarStats> => {
+    const response = await api.get('/webinars/stats');
+    return response.data;
+  },
+
+  // Upload CSV and create webinar
+  uploadCSV: async (formData: FormData): Promise<CSVUploadResponse> => {
+    const response = await api.post('/webinars/upload', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+      timeout: 60000, // 1 minute timeout for file upload
+    });
+    return response.data;
+  },
+
+  // Delete webinar
+  deleteWebinar: async (id: number): Promise<void> => {
+    await api.delete(`/webinars/${id}`);
   },
 };
 

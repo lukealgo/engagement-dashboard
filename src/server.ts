@@ -4,6 +4,8 @@ import path from 'path';
 import { setupDatabase } from './database/setup';
 import { slackRouter } from './routes/slack';
 import { engagementRouter } from './routes/engagement';
+import { hibobRouter } from './routes/hibob';
+import { webinarRouter } from './routes/webinars';
 import { ScheduledSync } from './services/ScheduledSync';
 
 const app = express();
@@ -17,6 +19,8 @@ app.use(express.static(path.join(__dirname, '../client/dist')));
 
 app.use('/api/slack', slackRouter);
 app.use('/api/engagement', engagementRouter);
+app.use('/api/hibob', hibobRouter);
+app.use('/api/webinars', webinarRouter);
 
 app.get('/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
