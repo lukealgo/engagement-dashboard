@@ -24,9 +24,16 @@ jobs:
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SERVER_SSH_KEY }}
           port: 22
+          env:
+            SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+            SLACK_APP_TOKEN: ${{ secrets.SLACK_APP_TOKEN }}
+            HIBOBSECRET: ${{ secrets.HIBOB_API_KEY }}
+            HIBOBSERVICE: ${{ secrets.HIBOB_SERVICE_USER_ID }}
+            HIBOB_BASE: ${{ secrets.HIBOB_BASE_URL }}
+            DATABASE_URL: ${{ secrets.DATABASE_URL }}
           script: |
             cd ~/n8n
-            
+
             # Pull latest changes
             if [ ! -d "tools/engagement-dashboard" ]; then
               mkdir -p tools
@@ -38,11 +45,23 @@ jobs:
               git pull origin master || git pull origin main || (cd .. && rm -rf engagement-dashboard && git clone https://github.com/lukealgo/engagement-dashboard.git engagement-dashboard)
               cd ../..
             fi
-            
+
+            # Create .env file with secrets
+            cat > tools/engagement-dashboard/.env << EOF
+            SLACK_BOT_TOKEN=${SLACK_BOT_TOKEN}
+            SLACK_APP_TOKEN=${SLACK_APP_TOKEN}
+            HIBOBSECRET=${HIBOBSECRET}
+            HIBOBSERVICE=${HIBOBSERVICE}
+            HIBOB_BASE=${HIBOB_BASE:-https://api.hibob.com}
+            DATABASE_URL=${DATABASE_URL:-/app/data/engagement.db}
+            NODE_ENV=production
+            PORT=3001
+            EOF
+
             # Stop and remove container but preserve volume
             docker compose stop engagement-dashboard || true
             docker compose rm -f engagement-dashboard || true
-            
+
             # Force rebuild the image (no cache) and start new container
             docker compose build --no-cache engagement-dashboard
             docker compose up -d engagement-dashboard
