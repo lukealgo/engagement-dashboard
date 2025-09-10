@@ -22,11 +22,14 @@ export class ScheduledSync {
       await this.syncAllChannels();
     });
 
-    // Sync HiBob data every 4 hours (to respect rate limits)
+    // HiBob sync disabled - requires HIBOBSECRET and HIBOBSERVICE env vars
+    // TODO: Re-enable when HiBob credentials are configured
+    /*
     cron.schedule('0 */4 * * *', async () => {
       console.log('Starting scheduled HiBob sync...');
       await this.syncHiBobData();
     });
+    */
 
     // Daily full sync at 2 AM
     cron.schedule('0 2 * * *', async () => {

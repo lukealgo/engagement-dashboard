@@ -22,11 +22,19 @@ export interface Config {
 }
 
 export function validateEnvironment(): Config {
-  const requiredEnvVars = ['SLACK_BOT_TOKEN', 'HIBOBSECRET', 'HIBOBSERVICE'];
+  const requiredEnvVars = ['SLACK_BOT_TOKEN'];
   const missingVars = requiredEnvVars.filter(varName => !process.env[varName]);
 
   if (missingVars.length > 0) {
     throw new Error(`Missing required environment variables: ${missingVars.join(', ')}`);
+  }
+
+  // Check for HiBob variables but don't require them
+  const hibobApiKey = process.env.HIBOBSECRET;
+  const hibobServiceUserId = process.env.HIBOBSERVICE;
+
+  if (!hibobApiKey || !hibobServiceUserId) {
+    console.warn('⚠️  HiBob environment variables not found - HiBob functionality will be disabled');
   }
 
   return {
@@ -37,8 +45,8 @@ export function validateEnvironment(): Config {
       appToken: process.env.SLACK_APP_TOKEN,
     },
     hibob: {
-      apiKey: process.env.HIBOBSECRET!,
-      serviceUserId: process.env.HIBOBSERVICE!,
+      apiKey: hibobApiKey || '',
+      serviceUserId: hibobServiceUserId || '',
       baseUrl: process.env.HIBOB_BASE || 'https://api.hibob.com',
     },
     database: {

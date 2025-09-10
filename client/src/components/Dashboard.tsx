@@ -1,6 +1,10 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import type { Channel, WorkspaceOverview, HiBobDashboardMetrics } from '../services/api';
 import { slackApi, engagementApi, hibobApi } from '../services/api';
+
+// HiBob functionality temporarily disabled - requires HIBOBSECRET and HIBOBSERVICE env vars
+// TODO: Re-enable when HiBob credentials are configured
+const isHiBobEnabled = false;
 import {
   MemoizedWorkspaceChart as WorkspaceChart,
   MemoizedUserRankings as UserRankings,
@@ -28,7 +32,7 @@ const Dashboard: React.FC = () => {
   const [syncing, setSyncing] = useState(false);
   const [hibobSyncing, setHibobSyncing] = useState(false);
   const [timeRange, setTimeRange] = useState(30);
-  const [activeTab, setActiveTab] = useState<'slack' | 'hibob' | 'webinars'>('slack');
+  const [activeTab, setActiveTab] = useState<'slack' | 'webinars'>('slack');
   const { toasts, removeToast, success, error, info } = useToast();
 
   const loadChannels = useCallback(async () => {
@@ -74,6 +78,11 @@ const Dashboard: React.FC = () => {
   }, [timeRange, error]);
 
   const loadHibobMetrics = useCallback(async () => {
+    if (!isHiBobEnabled) {
+      console.log('HiBob functionality disabled - skipping metrics load');
+      return;
+    }
+
     try {
       setLoading(true);
       const metrics = await hibobApi.getDashboardMetrics();
@@ -93,7 +102,9 @@ const Dashboard: React.FC = () => {
   useEffect(() => {
     loadChannels();
     loadWorkspaceOverview();
-    loadHibobMetrics();
+    if (isHiBobEnabled) {
+      loadHibobMetrics();
+    }
   }, []); // Remove dependencies to prevent re-renders
 
   // Separate effect for time range changes to avoid unnecessary channel reloads
@@ -128,6 +139,11 @@ const Dashboard: React.FC = () => {
   }, [info, success, error]); // Remove function dependency
 
   const handleHibobSync = useCallback(async () => {
+    if (!isHiBobEnabled) {
+      error('HiBob Disabled', 'HiBob functionality is currently disabled due to missing credentials.');
+      return;
+    }
+
     try {
       setHibobSyncing(true);
       info('HiBob Sync Started', 'Syncing HiBob data...');
@@ -188,14 +204,16 @@ const Dashboard: React.FC = () => {
                   <span className="tab-icon">💬</span>
                   <span>Slack</span>
                 </button>
-                <button
-                  onClick={() => setActiveTab('hibob')}
-                  className={`tab-button ${activeTab === 'hibob' ? 'active' : ''}`}
-                  aria-pressed={activeTab === 'hibob'}
-                >
-                  <span className="tab-icon">👥</span>
-                  <span>HiBob</span>
-                </button>
+                {isHiBobEnabled && (
+                  <button
+                    onClick={() => setActiveTab('hibob' as any)}
+                    className={`tab-button ${activeTab === 'hibob' ? 'active' : ''}`}
+                    aria-pressed={activeTab === 'hibob'}
+                  >
+                    <span className="tab-icon">👥</span>
+                    <span>HiBob</span>
+                  </button>
+                )}
                 <button
                   onClick={() => setActiveTab('webinars')}
                   className={`tab-button ${activeTab === 'webinars' ? 'active' : ''}`}
@@ -230,16 +248,16 @@ const Dashboard: React.FC = () => {
                 </div>
               )}
 
-              {activeTab !== 'webinars' && (
+              {activeTab === 'slack' && (
                 <button
-                  onClick={activeTab === 'slack' ? handleSyncAll : handleHibobSync}
-                  disabled={syncing || hibobSyncing}
+                  onClick={handleSyncAll}
+                  disabled={syncing}
                   className="sync-button modern-btn"
                   aria-describedby="sync-button-description"
                   aria-live="polite"
-                  aria-busy={syncing || hibobSyncing}
+                  aria-busy={syncing}
                 >
-                  {(syncing || hibobSyncing) ? (
+                  {syncing ? (
                     <>
                       <span aria-hidden="true">⏳</span>
                       <span>Syncing...</span>
@@ -253,7 +271,7 @@ const Dashboard: React.FC = () => {
                 </button>
               )}
               <span id="sync-button-description" className="visually-hidden">
-                Synchronizes data from {activeTab === 'slack' ? 'all Slack channels' : activeTab === 'hibob' ? 'HiBob API' : 'webinar data'}
+                Synchronizes data from {activeTab === 'slack' ? 'all Slack channels' : 'webinar data'}
               </span>
             </nav>
           </div>
@@ -326,7 +344,7 @@ const Dashboard: React.FC = () => {
               </>
             )}
           </>
-        ) : activeTab === 'hibob' ? (
+        ) : isHiBobEnabled && activeTab === 'hibob' ? (
           /* HiBob Dashboard Section */
           <HiBobDashboardSection />
         ) : (

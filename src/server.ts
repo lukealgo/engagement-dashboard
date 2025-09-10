@@ -19,7 +19,9 @@ app.use(express.static(path.join(__dirname, '../client/dist')));
 
 app.use('/api/slack', slackRouter);
 app.use('/api/engagement', engagementRouter);
-app.use('/api/hibob', hibobRouter);
+// HiBob routes disabled - requires HIBOBSECRET and HIBOBSERVICE env vars
+// TODO: Re-enable when HiBob credentials are configured
+// app.use('/api/hibob', hibobRouter);
 app.use('/api/webinars', webinarRouter);
 
 app.get('/health', (req, res) => {
