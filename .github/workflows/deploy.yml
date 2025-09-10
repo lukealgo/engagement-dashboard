@@ -52,16 +52,63 @@ jobs:
             PORT=3001
             EOF
 
-            # Stop and remove container but preserve volume
-            docker compose stop engagement-dashboard || true
-            docker compose rm -f engagement-dashboard || true
+            # Verify .env file was created correctly
+            echo "Contents of .env file:"
+            cat tools/engagement-dashboard/.env
+
+            # Show current working directory and files
+            echo "Current directory: $(pwd)"
+            echo "Files in engagement-dashboard directory:"
+            ls -la tools/engagement-dashboard/
+
+            # Check if docker-compose file exists and show its contents
+            echo "Docker compose files:"
+            find . -name "docker-compose*.yml" -o -name "docker-compose*.yaml" | head -5
+            if [ -f "docker-compose.yml" ]; then
+                echo "Contents of docker-compose.yml:"
+                cat docker-compose.yml
+            else
+                echo "No docker-compose.yml found, creating one..."
+                cat > docker-compose.yml << 'EOF'
+version: '3.8'
+services:
+  engagement-dashboard:
+    build:
+      context: ./tools/engagement-dashboard
+      dockerfile: Dockerfile
+    ports:
+      - "3001:3001"
+    volumes:
+      - engagement-data:/app/data
+    environment:
+      - NODE_ENV=production
+    env_file:
+      - ./tools/engagement-dashboard/.env
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:3001/health', (res) => { process.exit(res.statusCode === 200 ? 0 : 1) }).on('error', () => process.exit(1))"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 5s
+    restart: unless-stopped
+
+volumes:
+  engagement-data:
+EOF
+                echo "Created docker-compose.yml"
+                cat docker-compose.yml
+            fi
+
+            # Aggressive cleanup of old containers and images
+            docker compose down --volumes --remove-orphans || true
+            docker stop $(docker ps -aq) || true
+            docker rm $(docker ps -aq) || true
+            docker rmi $(docker images -q engagement-dashboard) || true
+            docker system prune -f
 
             # Force rebuild the image (no cache) and start new container
-            docker compose build --no-cache engagement-dashboard
+            docker compose build --no-cache --pull engagement-dashboard
             docker compose up -d engagement-dashboard
-            
-            # Clean up unused images
-            docker image prune -f
             
             # Check if service is running and capture logs
             sleep 15
