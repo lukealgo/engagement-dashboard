@@ -11,6 +11,8 @@ import { ScheduledSync } from './services/ScheduledSync';
 const app = express();
 const PORT = process.env.PORT || 3001;
 
+// Test deployment - checking data persistence (safe to remove)
+
 app.use(cors());
 app.use(express.json());
 
