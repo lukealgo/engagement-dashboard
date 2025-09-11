@@ -74,16 +74,17 @@ jobs:
                 echo "WARNING: No docker-compose.yml found in $(pwd). Skipping display."
             fi
 
-            # Aggressive cleanup of old containers and images (defensive wrappers for empty lists)
-            docker compose down --volumes --remove-orphans || true
-            if [ -n "$(docker ps -aq)" ]; then docker stop $(docker ps -aq) || true; fi
-            if [ -n "$(docker ps -aq)" ]; then docker rm $(docker ps -aq) || true; fi
+            # Only stop the engagement-dashboard service (preserve other services like Caddy)
+            docker compose stop engagement-dashboard || true
+            docker compose rm -f engagement-dashboard || true
             if [ -n "$(docker images -q engagement-dashboard)" ]; then docker rmi $(docker images -q engagement-dashboard) || true; fi
-            docker system prune -f || true
 
-            # Force rebuild the image (no cache) and start new container
+            # Force rebuild the image (no cache) and start container with dependencies
             docker compose build --no-cache --pull engagement-dashboard
-            docker compose up -d --force-recreate engagement-dashboard
+            docker compose up -d engagement-dashboard
+            
+            # Ensure Caddy is also running (needed for reverse proxy)
+            docker compose up -d caddy
             
             # Check if service is running and capture logs
             sleep 15
