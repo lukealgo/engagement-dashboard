@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import type { Channel, WorkspaceOverview, HiBobDashboardMetrics } from '../services/api';
-import { slackApi, engagementApi, hibobApi } from '../services/api';
+import type { Channel, WorkspaceOverview } from '../services/api';
+import { slackApi, engagementApi } from '../services/api';
 
 // HiBob functionality temporarily disabled - requires HIBOBSECRET and HIBOBSERVICE env vars
 // TODO: Re-enable when HiBob credentials are configured
@@ -18,7 +18,7 @@ import { ToastContainer } from './Toast';
 import { useToast } from '../hooks/useToast';
 import { SkeletonMetrics, SkeletonChart, SkeletonList } from './SkeletonLoader';
 import Logo from './Logo';
-import HiBobDashboardSection from './HiBobDashboardSection';
+// HiBob section disabled
 import WebinarDashboardSection from './WebinarDashboardSection';
 import './Dashboard.css';
 
@@ -27,10 +27,8 @@ const Dashboard: React.FC = () => {
 
   const [channels, setChannels] = useState<Channel[]>([]);
   const [workspaceOverview, setWorkspaceOverview] = useState<WorkspaceOverview | null>(null);
-  const [_hibobMetrics, setHibobMetrics] = useState<HiBobDashboardMetrics | null>(null);
   const [loading, setLoading] = useState(false);
   const [syncing, setSyncing] = useState(false);
-  const [hibobSyncing, setHibobSyncing] = useState(false);
   const [timeRange, setTimeRange] = useState(30);
   const [activeTab, setActiveTab] = useState<'slack' | 'webinars'>('slack');
   const { toasts, removeToast, success, error, info } = useToast();
@@ -77,27 +75,8 @@ const Dashboard: React.FC = () => {
     }
   }, [timeRange, error]);
 
-  const loadHibobMetrics = useCallback(async () => {
-    if (!isHiBobEnabled) {
-      console.log('HiBob functionality disabled - skipping metrics load');
-      return;
-    }
-
-    try {
-      setLoading(true);
-      const metrics = await hibobApi.getDashboardMetrics();
-      setHibobMetrics(metrics);
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to load HiBob metrics';
-      console.error('Failed to load HiBob metrics:', err);
-      error(
-        'Failed to Load HiBob Data',
-        errorMessage
-      );
-    } finally {
-      setLoading(false);
-    }
-  }, [error]);
+  // HiBob metrics loader disabled
+  const loadHibobMetrics = useCallback(async () => {}, []);
 
   useEffect(() => {
     loadChannels();
@@ -138,34 +117,7 @@ const Dashboard: React.FC = () => {
     }
   }, [info, success, error]); // Remove function dependency
 
-  const handleHibobSync = useCallback(async () => {
-    if (!isHiBobEnabled) {
-      error('HiBob Disabled', 'HiBob functionality is currently disabled due to missing credentials.');
-      return;
-    }
-
-    try {
-      setHibobSyncing(true);
-      info('HiBob Sync Started', 'Syncing HiBob data...');
-
-      await hibobApi.syncAllData();
-      await loadHibobMetrics();
-
-      success(
-        'HiBob Sync Complete!',
-        'All HiBob data has been successfully synchronized.'
-      );
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to sync HiBob data';
-      console.error('Failed to sync HiBob data:', err);
-      error(
-        'HiBob Sync Failed',
-        errorMessage
-      );
-    } finally {
-      setHibobSyncing(false);
-    }
-  }, [info, success, error]); // Remove function dependency
+  const handleHibobSync = useCallback(async () => {}, []);
 
   // Memoized values for performance
   const hasChannels = useMemo(() => channels.length > 0, [channels.length]);
@@ -204,16 +156,7 @@ const Dashboard: React.FC = () => {
                   <span className="tab-icon">💬</span>
                   <span>Slack</span>
                 </button>
-                {isHiBobEnabled && (
-                  <button
-                    onClick={() => setActiveTab('hibob' as any)}
-                    className={`tab-button ${activeTab === 'hibob' ? 'active' : ''}`}
-                    aria-pressed={activeTab === 'hibob'}
-                  >
-                    <span className="tab-icon">👥</span>
-                    <span>HiBob</span>
-                  </button>
-                )}
+                {/* HiBob tab hidden */}
                 <button
                   onClick={() => setActiveTab('webinars')}
                   className={`tab-button ${activeTab === 'webinars' ? 'active' : ''}`}
@@ -265,7 +208,7 @@ const Dashboard: React.FC = () => {
                   ) : (
                     <>
                       <span aria-hidden="true">🔄</span>
-                      <span>Sync {activeTab === 'slack' ? 'Slack' : 'HiBob'}</span>
+                      <span>Sync Slack</span>
                     </>
                   )}
                 </button>
@@ -344,9 +287,6 @@ const Dashboard: React.FC = () => {
               </>
             )}
           </>
-        ) : isHiBobEnabled && activeTab === 'hibob' ? (
-          /* HiBob Dashboard Section */
-          <HiBobDashboardSection />
         ) : (
           /* Webinar Dashboard Section */
           <WebinarDashboardSection />
