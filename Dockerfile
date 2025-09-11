@@ -48,7 +48,6 @@ RUN apk add --no-cache sqlite
 # Copy built application
 COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/client/dist ./client/dist
-COPY --from=builder /app/.env ./.env
 COPY --from=prod-deps /app/node_modules ./node_modules
 COPY --from=builder /app/package.json ./
 
