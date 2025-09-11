@@ -117,7 +117,7 @@ const Dashboard: React.FC = () => {
     }
   }, [info, success, error]); // Remove function dependency
 
-  const handleHibobSync = useCallback(async () => {}, []);
+  // HiBob sync handler removed
 
   // Memoized values for performance
   const hasChannels = useMemo(() => channels.length > 0, [channels.length]);
